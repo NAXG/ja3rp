@@ -60,7 +60,7 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 			ctx:         ctx,
 			clientHello: clientHello,
 		}
-		c.JA3 = clientHelloInfo(ctx, c, clientHello).JA3()
+        c.JA3 = clientHelloInfo(ctx, c, clientHello).JA3Digest()
 
 		// JA3 黑名单检测
 		if len(c.config.JA3Blacklist) > 0 && isJA3Blacklisted(c.JA3, c.config.JA3Blacklist) {
@@ -76,7 +76,7 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 		ctx:         ctx,
 		clientHello: clientHello,
 	}
-	c.JA3 = clientHelloInfo(ctx, c, clientHello).JA3()
+    c.JA3 = clientHelloInfo(ctx, c, clientHello).JA3Digest()
 
 	// JA3 黑名单检测
 	if len(c.config.JA3Blacklist) > 0 && isJA3Blacklisted(c.JA3, c.config.JA3Blacklist) {

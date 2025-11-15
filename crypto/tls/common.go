@@ -867,6 +867,8 @@ func (c *Config) Clone() *Config {
 		DynamicRecordSizingDisabled: c.DynamicRecordSizingDisabled,
 		Renegotiation:               c.Renegotiation,
 		KeyLogWriter:                c.KeyLogWriter,
+		JA3Blacklist:                c.JA3Blacklist,
+		IPBlacklist:                 c.IPBlacklist,
 		sessionTicketKeys:           c.sessionTicketKeys,
 		autoSessionTicketKeys:       c.autoSessionTicketKeys,
 	}
@@ -1536,10 +1538,13 @@ func isJA3Blacklisted(ja3 string, blacklist []string) bool {
 
 // isIPBlacklisted checks if the given IP address is in the blacklist
 func isIPBlacklisted(ip string, blacklist []string) bool {
-	for _, blocked := range blacklist {
-		if ip == blocked {
-			return true
-		}
-	}
-	return false
+    if host, _, err := net.SplitHostPort(ip); err == nil {
+        ip = host
+    }
+    for _, blocked := range blacklist {
+        if ip == blocked {
+            return true
+        }
+    }
+    return false
 }

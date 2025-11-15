@@ -135,33 +135,26 @@ package main
 
 import (
     "github.com/naxg/ja3rp"
-    "github.com/naxg/ja3rp/crypto/tls"
     "net/url"
 )
 
 func main() {
     destination, _ := url.Parse("https://api.example.com")
 
-    // Configure TLS with early detection
-    tlsConfig := &tls.Config{
-        Certificates: []tls.Certificate{cert}, // your certificate
-        // Enable TLS-stage detection
-        IPBlacklist: []string{
-            "192.168.1.100",
-            "10.0.0.50",
-        },
-        JA3Blacklist: []string{
-            "bd50e49d418ed1777b9a410d614440c4", // Blocked client fingerprint
-            "suspicious_bot_fingerprint",
-        },
-    }
-
-    server := ja3rp.NewServerTLS("0.0.0.0:443", ja3rp.ServerOptions{
+    server := ja3rp.NewServer("0.0.0.0:443", ja3rp.ServerOptions{
         Destination: destination,
-        TLSConfig:   tlsConfig,
     })
 
-    server.ListenAndServe()
+    server.TLSConfig.IPBlacklist = []string{
+        "192.168.1.100",
+        "10.0.0.50",
+    }
+    server.TLSConfig.JA3Blacklist = []string{
+        "bd50e49d418ed1777b9a410d614440c4",
+        "suspicious_bot_fingerprint",
+    }
+
+    server.ListenAndServeTLS("cert.crt", "cert.key")
 }
 ```
 

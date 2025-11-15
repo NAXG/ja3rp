@@ -38,7 +38,7 @@ type ServerOptions struct {
 }
 
 func (s ServerOptions) handleRoot(w http.ResponseWriter, r *http.Request) {
-	ja3Hash := JA3Digest(r.JA3)
+    ja3Hash := r.JA3
 
 	if inArray(ja3Hash, s.Blacklist) || (len(s.Whitelist) > 0 && !inArray(ja3Hash, s.Whitelist)) {
 		w.WriteHeader(http.StatusForbidden)
@@ -52,10 +52,10 @@ func (s ServerOptions) handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if s.Destination == nil {
-		fmt.Fprint(w, "Access granted. JA3 hash: "+ja3Hash)
-		return
-	}
+    if s.Destination == nil {
+        fmt.Fprint(w, "Access granted. JA3 hash: "+ja3Hash)
+        return
+    }
 
 	r.URL.Host = s.Destination.Host
 	r.URL.Scheme = s.Destination.Scheme
