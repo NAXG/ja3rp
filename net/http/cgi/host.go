@@ -17,7 +17,7 @@ package cgi
 import (
 	"bufio"
 	"fmt"
-	"github.com/sleeyax/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http"
 	"io"
 	"log"
 	"net"
@@ -90,10 +90,11 @@ func (h *Handler) stderr() io.Writer {
 
 // removeLeadingDuplicates remove leading duplicate in environments.
 // It's possible to override environment like following.
-//    cgi.Handler{
-//      ...
-//      Env: []string{"SCRIPT_FILENAME=foo.php"},
-//    }
+//
+//	cgi.Handler{
+//	  ...
+//	  Env: []string{"SCRIPT_FILENAME=foo.php"},
+//	}
 func removeLeadingDuplicates(env []string) (ret []string) {
 	for i, e := range env {
 		found := false

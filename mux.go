@@ -3,13 +3,14 @@ package ja3rp
 // Mux was respectfully copy-pasted (and slightly edited afterwards) from the following source: https://github.com/golang/go/blob/master/src/net/http/server.go
 
 import (
-	"github.com/sleeyax/ja3rp/net/http"
 	"net"
 	"net/url"
 	"path"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/naxg/ja3rp/net/http"
 )
 
 // Mux is an HTTP request multiplexer.
@@ -171,7 +172,7 @@ func (mux *Mux) shouldRedirectRLocked(host, path string) bool {
 // the pattern that will match after following the redirect.
 //
 // If there is no registered handler that applies to the request,
-// Handler returns a ``page not found'' handler and an empty pattern.
+// Handler returns a “page not found” handler and an empty pattern.
 func (mux *Mux) Handler(r *http.Request) (h http.Handler, pattern string) {
 
 	// CONNECT requests are not canonicalized.

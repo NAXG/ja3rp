@@ -3,10 +3,11 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/sleeyax/ja3rp"
 	"log"
 	"net/url"
 	"os"
+
+	"github.com/naxg/ja3rp"
 )
 
 func readFile(path string) ([]string, error) {

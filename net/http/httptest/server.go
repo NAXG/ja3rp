@@ -10,9 +10,9 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
-	"github.com/sleeyax/ja3rp/crypto/tls"
-	"github.com/sleeyax/ja3rp/net/http"
-	"github.com/sleeyax/ja3rp/net/http/internal/testcert"
+	"github.com/naxg/ja3rp/crypto/tls"
+	"github.com/naxg/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http/internal/testcert"
 	"log"
 	"net"
 	"os"
@@ -76,7 +76,9 @@ func newLocalListener() net.Listener {
 
 // When debugging a particular http server-based test,
 // this flag lets you run
+//
 //	go test -run=BrokenTest -httptest.serve=127.0.0.1:8000
+//
 // to start the broken server so you can interact with it manually.
 // We only register this flag if it looks like the caller knows about it
 // and is trying to use it as we don't want to pollute flags and this

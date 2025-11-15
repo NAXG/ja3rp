@@ -8,7 +8,7 @@ package cookiejar
 
 import (
 	"fmt"
-	"github.com/sleeyax/ja3rp/net/http/internal/ascii"
+	"github.com/naxg/ja3rp/net/http/internal/ascii"
 	"strings"
 	"unicode/utf8"
 )

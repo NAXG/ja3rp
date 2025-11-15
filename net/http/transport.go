@@ -16,9 +16,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sleeyax/ja3rp/crypto/tls"
-	"github.com/sleeyax/ja3rp/net/http/httptrace"
-	"github.com/sleeyax/ja3rp/net/http/internal/ascii"
+	"github.com/naxg/ja3rp/crypto/tls"
+	"github.com/naxg/ja3rp/net/http/httptrace"
+	"github.com/naxg/ja3rp/net/http/internal/ascii"
 	"io"
 	"log"
 	"net"
@@ -1792,7 +1792,6 @@ var _ io.ReaderFrom = (*persistConnWriter)(nil)
 //	socks5://proxy.com|https|foo.com  socks5 to proxy, then https to foo.com
 //	https://proxy.com|https|foo.com   https to proxy, then CONNECT to foo.com
 //	https://proxy.com|http            https to proxy, http to anywhere after that
-//
 type connectMethod struct {
 	_            incomparable
 	proxyURL     *url.URL // nil for no proxy, else full proxy URL

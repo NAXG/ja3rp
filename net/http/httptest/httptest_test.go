@@ -5,8 +5,8 @@
 package httptest
 
 import (
-	"github.com/sleeyax/ja3rp/crypto/tls"
-	"github.com/sleeyax/ja3rp/net/http"
+	"github.com/naxg/ja3rp/crypto/tls"
+	"github.com/naxg/ja3rp/net/http"
 	"io"
 	"net/url"
 	"reflect"

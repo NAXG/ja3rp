@@ -45,6 +45,15 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 		return err
 	}
 
+	// IP 黑名单检测（在握手早期进行）
+	if len(c.config.IPBlacklist) > 0 {
+		remoteAddr := c.conn.RemoteAddr().String()
+		if isIPBlacklisted(remoteAddr, c.config.IPBlacklist) {
+			c.sendAlert(alertHandshakeFailure)
+			return fmt.Errorf("tls: IP address %s is blacklisted", remoteAddr)
+		}
+	}
+
 	if c.vers == VersionTLS13 {
 		hs := serverHandshakeStateTLS13{
 			c:           c,
@@ -52,6 +61,13 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 			clientHello: clientHello,
 		}
 		c.JA3 = clientHelloInfo(ctx, c, clientHello).JA3()
+
+		// JA3 黑名单检测
+		if len(c.config.JA3Blacklist) > 0 && isJA3Blacklisted(c.JA3, c.config.JA3Blacklist) {
+			c.sendAlert(alertHandshakeFailure)
+			return fmt.Errorf("tls: JA3 fingerprint %s is blacklisted", c.JA3)
+		}
+
 		return hs.handshake()
 	}
 
@@ -61,6 +77,12 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 		clientHello: clientHello,
 	}
 	c.JA3 = clientHelloInfo(ctx, c, clientHello).JA3()
+
+	// JA3 黑名单检测
+	if len(c.config.JA3Blacklist) > 0 && isJA3Blacklisted(c.JA3, c.config.JA3Blacklist) {
+		c.sendAlert(alertHandshakeFailure)
+		return fmt.Errorf("tls: JA3 fingerprint %s is blacklisted", c.JA3)
+	}
 
 	return hs.handshake()
 }

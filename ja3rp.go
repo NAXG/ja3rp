@@ -4,9 +4,11 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/sleeyax/ja3rp/net/http"
-	"github.com/sleeyax/ja3rp/net/http/httputil"
 	"net/url"
+
+	"github.com/naxg/ja3rp/crypto/tls"
+	"github.com/naxg/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http/httputil"
 )
 
 type Handler func(w http.ResponseWriter, r *http.Request)
@@ -71,9 +73,16 @@ func NewServer(addr string, options ServerOptions) *http.Server {
 
 	options.Mux.HandleFunc("/", options.handleRoot)
 
+	// 创建 TLS 配置并传递黑名单
+	tlsConfig := &tls.Config{
+		// 传递黑名单到 TLS 层
+		JA3Blacklist: options.Blacklist,
+	}
+
 	return &http.Server{
-		Addr:    addr,
-		Handler: options.Mux,
+		Addr:      addr,
+		Handler:   options.Mux,
+		TLSConfig: tlsConfig,
 	}
 }
 

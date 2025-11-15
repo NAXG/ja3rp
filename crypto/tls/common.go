@@ -74,7 +74,6 @@ const (
 	typeFinished            uint8 = 20
 	typeCertificateStatus   uint8 = 22
 	typeKeyUpdate           uint8 = 24
-	typeNextProtocol        uint8 = 67  // Not IANA assigned
 	typeMessageHash         uint8 = 254 // synthetic message
 )
 
@@ -131,8 +130,7 @@ type keyShare struct {
 
 // TLS 1.3 PSK Key Exchange Modes. See RFC 8446, Section 4.2.9.
 const (
-	pskModePlain uint8 = 0
-	pskModeDHE   uint8 = 1
+	pskModeDHE uint8 = 1
 )
 
 // TLS 1.3 PSK Identity. Can be a Session Ticket, or a reference to a saved
@@ -502,7 +500,7 @@ func (c *ClientHelloInfo) JA3() string {
 		vals = append(vals, fmt.Sprintf("%d", v))
 	}
 
-	s += fmt.Sprintf("%s", strings.Join(vals, "-"))
+	s += strings.Join(vals, "-")
 
 	return s
 }
@@ -773,6 +771,12 @@ type Config struct {
 	// Use of KeyLogWriter compromises security and should only be
 	// used for debugging.
 	KeyLogWriter io.Writer
+
+	// JA3Blacklist contains JA3 fingerprints that should be blocked at TLS handshake
+	JA3Blacklist []string
+
+	// IPBlacklist contains IP addresses that should be blocked at TLS handshake
+	IPBlacklist []string
 
 	// mutex protects sessionTicketKeys and autoSessionTicketKeys.
 	mutex sync.RWMutex
@@ -1511,6 +1515,29 @@ func unexpectedMessageError(wanted, got interface{}) error {
 func isSupportedSignatureAlgorithm(sigAlg SignatureScheme, supportedSignatureAlgorithms []SignatureScheme) bool {
 	for _, s := range supportedSignatureAlgorithms {
 		if s == sigAlg {
+			return true
+		}
+	}
+	return false
+}
+
+// isJA3Blacklisted checks if the given JA3 fingerprint is in the blacklist
+func isJA3Blacklisted(ja3 string, blacklist []string) bool {
+	// 使用 MD5 哈希进行比较（因为 JA3 指纹是 MD5 哈希值）
+	if len(ja3) == 32 { // MD5 哈希长度为 32 个十六进制字符
+		for _, blocked := range blacklist {
+			if ja3 == blocked {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// isIPBlacklisted checks if the given IP address is in the blacklist
+func isIPBlacklisted(ip string, blacklist []string) bool {
+	for _, blocked := range blacklist {
+		if ip == blocked {
 			return true
 		}
 	}

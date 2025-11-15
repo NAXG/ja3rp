@@ -582,12 +582,14 @@ func (c *Conn) readChangeCipherSpec() error {
 
 // readRecordOrCCS reads one or more TLS records from the connection and
 // updates the record layer state. Some invariants:
-//   * c.in must be locked
-//   * c.input must be empty
+//   - c.in must be locked
+//   - c.input must be empty
+//
 // During the handshake one and only one of the following will happen:
 //   - c.hand grows
 //   - c.in.changeCipherSpec is called
 //   - an error is returned
+//
 // After the handshake one and only one of the following will happen:
 //   - c.hand grows
 //   - c.input is set
@@ -960,11 +962,12 @@ func (c *Conn) writeRecordLocked(typ recordType, data []byte) (int, error) {
 		_, outBuf = sliceForAppend(outBuf[:0], recordHeaderLen)
 		outBuf[0] = byte(typ)
 		vers := c.vers
-		if vers == 0 {
+		switch vers {
+		case 0:
 			// Some TLS servers fail if the record version is
 			// greater than TLS 1.0 for the initial ClientHello.
 			vers = VersionTLS10
-		} else if vers == VersionTLS13 {
+		case VersionTLS13:
 			// TLS 1.3 froze the record layer version to 1.2.
 			// See RFC 8446, Section 5.1.
 			vers = VersionTLS12

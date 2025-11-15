@@ -5,7 +5,7 @@
 package http
 
 import (
-	"github.com/sleeyax/ja3rp/net/http/internal/ascii"
+	"github.com/naxg/ja3rp/net/http/internal/ascii"
 	"io"
 	"net/http/httptrace"
 	"net/textproto"

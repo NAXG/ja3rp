@@ -8,8 +8,8 @@ package cookiejar
 import (
 	"errors"
 	"fmt"
-	"github.com/sleeyax/ja3rp/net/http"
-	"github.com/sleeyax/ja3rp/net/http/internal/ascii"
+	"github.com/naxg/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http/internal/ascii"
 	"net"
 	"net/url"
 	"sort"
@@ -19,9 +19,9 @@ import (
 )
 
 // PublicSuffixList provides the public suffix of a domain. For example:
-//      - the public suffix of "example.com" is "com",
-//      - the public suffix of "foo1.foo2.foo3.co.uk" is "co.uk", and
-//      - the public suffix of "bar.pvt.k12.ma.us" is "pvt.k12.ma.us".
+//   - the public suffix of "example.com" is "com",
+//   - the public suffix of "foo1.foo2.foo3.co.uk" is "co.uk", and
+//   - the public suffix of "bar.pvt.k12.ma.us" is "pvt.k12.ma.us".
 //
 // Implementations of PublicSuffixList must be safe for concurrent use by
 // multiple goroutines.

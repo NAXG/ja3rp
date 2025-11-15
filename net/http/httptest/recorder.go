@@ -7,7 +7,7 @@ package httptest
 import (
 	"bytes"
 	"fmt"
-	"github.com/sleeyax/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http"
 	"io"
 	"net/textproto"
 	"strconv"

@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/sleeyax/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http"
 	"io"
 	"net"
 	"net/url"

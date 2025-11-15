@@ -2,15 +2,16 @@ package ja3rp
 
 import (
 	"fmt"
-	"github.com/sleeyax/ja3rp/crypto/tls"
-	"github.com/sleeyax/ja3rp/net/http"
-	"github.com/sleeyax/ja3rp/net/http/httptest"
 	"io"
 	"net/url"
 	"os"
 	"path"
 	"strconv"
 	"testing"
+
+	"github.com/naxg/ja3rp/crypto/tls"
+	"github.com/naxg/ja3rp/net/http"
+	"github.com/naxg/ja3rp/net/http/httptest"
 )
 
 const testPort = 1337

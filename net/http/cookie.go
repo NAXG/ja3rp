@@ -5,7 +5,7 @@
 package http
 
 import (
-	"github.com/sleeyax/ja3rp/net/http/internal/ascii"
+	"github.com/naxg/ja3rp/net/http/internal/ascii"
 	"log"
 	"net"
 	"net/textproto"
@@ -367,9 +367,11 @@ func sanitizeCookieName(n string) string {
 // https://tools.ietf.org/html/rfc6265#section-4.1.1
 // cookie-value      = *cookie-octet / ( DQUOTE *cookie-octet DQUOTE )
 // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-//           ; US-ASCII characters excluding CTLs,
-//           ; whitespace DQUOTE, comma, semicolon,
-//           ; and backslash
+//
+//	; US-ASCII characters excluding CTLs,
+//	; whitespace DQUOTE, comma, semicolon,
+//	; and backslash
+//
 // We loosen this as spaces and commas are common in cookie values
 // but we produce a quoted cookie-value if and only if v contains
 // commas or spaces.

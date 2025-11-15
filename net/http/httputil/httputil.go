@@ -7,7 +7,7 @@
 package httputil
 
 import (
-	"github.com/sleeyax/ja3rp/net/http/internal"
+	"github.com/naxg/ja3rp/net/http/internal"
 	"io"
 )
 

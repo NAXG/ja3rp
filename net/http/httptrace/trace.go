@@ -8,7 +8,7 @@ package httptrace
 
 import (
 	"context"
-	"github.com/sleeyax/ja3rp/crypto/tls"
+	"github.com/naxg/ja3rp/crypto/tls"
 	"net"
 	"net/textproto"
 	"reflect"
