@@ -1,4 +1,7 @@
 # JA3RP (JA3 Reverse Proxy)
+
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md) [![中文](https://img.shields.io/badge/Language-中文-red.svg)](README_CN.md)
+
 Ja3RP is a basic reverse proxy server that filters traffic based on [JA3](https://github.com/salesforce/ja3) fingerprints.
 It can also operate as a regular HTTP server for testing purposes.
 
@@ -16,6 +19,7 @@ This project implements JA3 fingerprint-based traffic filtering through several 
    - **Reverse Proxy Mode**: Forwards traffic to destination servers when JA3 matches criteria
    - **HTTP Server Mode**: Standalone HTTP server for testing
 4. **Traffic Filtering**: Uses MD5 hashes of JA3 strings for whitelist/blacklist filtering
+5. **Early TLS Detection**: Performs IP and JA3 fingerprint detection during TLS handshake phase for immediate blocking
 
 ### Key Files
 
@@ -24,6 +28,11 @@ This project implements JA3 fingerprint-based traffic filtering through several 
 - `crypto/tls/`: Modified TLS implementation with JA3 fingerprint extraction
 - `net/http/`: Modified HTTP server that includes JA3 support
 - `cmd/main.go`: CLI entry point for running the server
+
+## Documentation
+
+- **English** - This document
+- **中文** - [README_CN.md](README_CN.md) - 中文文档
 
 ## Installation
 ```
@@ -120,7 +129,101 @@ $ ja3rp -a localhost:1337 -d https://example.com -c cert.crt -k cert.key -b blac
 $ ja3rp -a localhost:1337 -c cert.crt -k cert.key
 ```
 
+**TLS Stage Detection Example** (programmatic usage):
+```go
+package main
+
+import (
+    "github.com/naxg/ja3rp"
+    "github.com/naxg/ja3rp/crypto/tls"
+    "net/url"
+)
+
+func main() {
+    destination, _ := url.Parse("https://api.example.com")
+
+    // Configure TLS with early detection
+    tlsConfig := &tls.Config{
+        Certificates: []tls.Certificate{cert}, // your certificate
+        // Enable TLS-stage detection
+        IPBlacklist: []string{
+            "192.168.1.100",
+            "10.0.0.50",
+        },
+        JA3Blacklist: []string{
+            "bd50e49d418ed1777b9a410d614440c4", // Blocked client fingerprint
+            "suspicious_bot_fingerprint",
+        },
+    }
+
+    server := ja3rp.NewServerTLS("0.0.0.0:443", ja3rp.ServerOptions{
+        Destination: destination,
+        TLSConfig:   tlsConfig,
+    })
+
+    server.ListenAndServe()
+}
+```
+
 Hashes should be stored in .txt files, each separated by a new line.
+
+### TLS Stage Detection
+
+JA3RP implements **early detection** at the TLS handshake level, providing immediate blocking of unwanted connections before they reach the HTTP layer.
+
+#### IP Address Detection
+- **Location**: [`crypto/tls/handshake_server.go:48-55`](crypto/tls/handshake_server.go:48-55)
+- **Mechanism**: Checks client IP against blacklist during TLS handshake
+- **Implementation**:
+  ```go
+  if len(c.config.IPBlacklist) > 0 {
+      remoteAddr := c.conn.RemoteAddr().String()
+      if isIPBlacklisted(remoteAddr, c.config.IPBlacklist) {
+          c.sendAlert(alertHandshakeFailure)
+          return fmt.Errorf("tls: IP address %s is blacklisted", remoteAddr)
+      }
+  }
+  ```
+
+#### JA3 Fingerprint Detection
+- **Location**: [`crypto/tls/handshake_server.go:65-69`](crypto/tls/handshake_server.go:65-69) (TLS 1.3) and [`crypto/tls/handshake_server.go:81-85`](crypto/tls/handshake_server.go:81-85) (TLS 1.2/1.1)
+- **Mechanism**: Extracts JA3 fingerprint from ClientHello and checks against blacklist
+- **Implementation**:
+  ```go
+  if len(c.config.JA3Blacklist) > 0 && isJA3Blacklisted(c.JA3, c.config.JA3Blacklist) {
+      c.sendAlert(alertHandshakeFailure)
+      return fmt.Errorf("tls: JA3 fingerprint %s is blacklisted", c.JA3)
+  }
+  ```
+
+#### Detection Flow
+1. **TCP Connection Established** → Client IP checked immediately
+2. **TLS Handshake Begins** → JA3 fingerprint extracted from ClientHello
+3. **Early Decision Made** → Connection terminated if either check fails
+4. **HTTP Layer Bypassed** → No HTTP processing for blocked connections
+
+#### Configuration Options
+- **IP Blacklist**: `IPBlacklist []string` in TLS Config
+- **JA3 Blacklist**: `JA3Blacklist []string` in TLS Config
+- **Detection Timing**: Occurs before any HTTP headers are processed
+
+This early detection mechanism provides:
+- **Performance**: Unwanted connections are rejected at the TLS level
+- **Security**: Malicious clients never reach the application layer
+- **Efficiency**: Reduced resource usage by filtering before HTTP processing
+
+#### Performance Benefits
+
+| Detection Method | Processing Stage | Resource Usage | Response Time |
+|------------------|------------------|----------------|---------------|
+| **TLS Stage Detection** | Handshake Level | Minimal (pre-HTTP) | Immediate |
+| Traditional Detection | HTTP Layer | Full HTTP processing | Delayed |
+
+**Key Advantages:**
+- **Zero HTTP Overhead**: Blocked connections never consume HTTP processing resources
+- **Immediate Response**: TLS handshake failure alerts provide instant feedback
+- **Memory Efficient**: No HTTP request/response objects created for blocked connections
+- **CPU Optimized**: Minimal cryptographic operations for blacklisted connections
 
 ### Development
 
