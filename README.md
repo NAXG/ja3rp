@@ -1,19 +1,44 @@
-> [!IMPORTANT]  
-> This project is no longer maintained. Consider [guardgress](https://github.com/h3adex/guardgress) if you're looking for a production-ready alternative.
-
 # JA3RP (JA3 Reverse Proxy)
 Ja3RP is a basic reverse proxy server that filters traffic based on [JA3](https://github.com/salesforce/ja3) fingerprints.
 It can also operate as a regular HTTP server for testing purposes.
 
 Inspired by this [ja3-server](https://github.com/CapacitorSet/ja3-server) POC.
 
+## Architecture
+
+This project implements JA3 fingerprint-based traffic filtering through several key components:
+
+### Core Components
+
+1. **Modified Go Standard Library**: Custom implementations of `crypto/tls` and `net/http` packages to extract JA3 fingerprints during TLS handshakes
+2. **JA3 Fingerprint Extraction**: JA3 fingerprints are extracted in `crypto/tls/common.go:JA3()` method
+3. **Server Architecture**: The main server (`ja3rp.go`) operates in two modes:
+   - **Reverse Proxy Mode**: Forwards traffic to destination servers when JA3 matches criteria
+   - **HTTP Server Mode**: Standalone HTTP server for testing
+4. **Traffic Filtering**: Uses MD5 hashes of JA3 strings for whitelist/blacklist filtering
+
+### Key Files
+
+- `ja3rp.go`: Core server implementation and main server logic
+- `mux.go`: Custom HTTP request multiplexer (modified from Go standard library)
+- `crypto/tls/`: Modified TLS implementation with JA3 fingerprint extraction
+- `net/http/`: Modified HTTP server that includes JA3 support
+- `cmd/main.go`: CLI entry point for running the server
+
 ## Installation
 ```
-# Install library locally:
-$ go get github.com/sleeyax/ja3rp
+# Clone the repository
+git clone https://github.com/naxg/ja3rp.git
+cd ja3rp
 
-# Install binary globally:
-$ go install github.com/sleeyax/ja3rp
+# Install dependencies
+go mod download
+
+# Build the binary
+go build ./cmd/main.go
+
+# Or install globally
+go install ./cmd/main.go
 ```
 
 ## Usage
@@ -27,6 +52,8 @@ $ openssl req -new -subj "/C=US/ST=Utah/CN=localhost" -newkey rsa:2048 -nodes -k
 $ openssl x509 -req -days 365 -in localhost.csr -signkey localhost.key -out localhost.crt
 ```
 
+**Note**: The project includes test certificates in `internal/tests/data/` for testing purposes.
+
 ### Package
 The following example starts an HTTPS server and filters incoming traffic based on a JA3 hash.
 If the hash is found in the whitelist the traffic is forwarded to the configured destination server.
@@ -37,8 +64,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/sleeyax/ja3rp"
-	"github.com/sleeyax/ja3rp/net/http"
+	"github.com/naxg/ja3rp"
+	"github.com/naxg/ja3rp/net/http"
 	"log"
 	"net/url"
 )
@@ -68,12 +95,55 @@ func main() {
 ```
 
 ### CLI
+
+#### Basic Usage
 ```
 $ ja3rp -h
 Usage: ja3rp -a <address> [-d <destination URL> -c <cert file> -k <cert key> -w <whitelist file> -b <blacklist file>]
 Example: $ ja3rp -a localhost:1337 -d https://example.com -c certificate.crt -k certificate.key -w whitelist.txt -b blacklist.txt
 ```
+
+#### Examples
+
+**Whitelist mode** (only allow specific clients):
+```bash
+$ ja3rp -a localhost:1337 -d https://example.com -c cert.crt -k cert.key -w whitelist.txt
+```
+
+**Blacklist mode** (block specific clients):
+```bash
+$ ja3rp -a localhost:1337 -d https://example.com -c cert.crt -k cert.key -b blacklist.txt
+```
+
+**HTTP server mode** (for testing, no proxy):
+```bash
+$ ja3rp -a localhost:1337 -c cert.crt -k cert.key
+```
+
 Hashes should be stored in .txt files, each separated by a new line.
+
+### Development
+
+#### Building and Testing
+```bash
+# Run tests
+go test -v
+
+# Run specific test
+go test -v -run TestReverseProxy
+
+# Build the project
+go build ./cmd/main.go
+
+# Update dependencies
+go mod tidy
+```
+
+#### Testing with Certificates
+The project includes self-signed certificates for testing in `internal/tests/data/`. Tests automatically use these certificates for TLS connections.
+
+#### JA3 Fingerprint Format
+JA3 fingerprints are constructed as: `SSLVersion,AcceptedCiphers,Extensions,EllipticCurves,EllipticCurvePointFormats`
 
 ## Licenses
 This project is licensed with the [MIT License](LICENSE).

@@ -48,7 +48,7 @@ func getPort(defaultValue int) string {
 
 func (dsm *destinationServerMock) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	dsm.reached = true
-	fmt.Fprintf(w, "ok")
+	fmt.Fprint(w, "ok")
 }
 
 func TestReverseProxyServer(t *testing.T) {
@@ -101,7 +101,7 @@ func TestServer(t *testing.T) {
 	})
 	defer s.Close()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, expected)
+		fmt.Fprint(w, expected)
 	})
 
 	go (func() {

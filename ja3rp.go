@@ -46,14 +46,14 @@ func (s ServerOptions) handleRoot(w http.ResponseWriter, r *http.Request) {
 		if s.OnBlocked != nil {
 			s.OnBlocked(w, r)
 		} else {
-			fmt.Fprintf(w, "Access forbidden.")
+			fmt.Fprint(w, "Access forbidden.")
 		}
 
 		return
 	}
 
 	if s.Destination == nil {
-		fmt.Fprintf(w, "Access granted. JA3 hash: "+ja3Hash)
+		fmt.Fprint(w, "Access granted. JA3 hash: "+ja3Hash)
 		return
 	}
 
